@@ -6,7 +6,40 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const clientDist = path.join(rootDir, 'dist', 'client');
-const serverBundlePath = path.join(rootDir, 'dist', 'server', 'server.js');
+
+// The SSR entry location varies by build environment/adapter, so search the known spots.
+const serverCandidates = [
+  'dist/server/server.js',
+  'dist/server/index.js',
+  'dist/server/server.mjs',
+  'dist/server/index.mjs',
+  'dist/ssr/server.js',
+  'dist/ssr/index.js',
+  '.output/server/index.mjs',
+].map((p) => path.join(rootDir, p));
+
+function listTree(dir, depth = 2, prefix = '') {
+  if (!fs.existsSync(dir)) return `${prefix}(missing) ${path.relative(rootDir, dir)}\n`;
+  let out = '';
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === 'assets' || entry.name === 'node_modules') continue;
+    out += `${prefix}${entry.name}${entry.isDirectory() ? '/' : ''}\n`;
+    if (entry.isDirectory() && depth > 1) out += listTree(path.join(dir, entry.name), depth - 1, prefix + '  ');
+  }
+  return out;
+}
+
+function findServerBundle() {
+  const found = serverCandidates.find((p) => fs.existsSync(p));
+  if (found) return found;
+  // Fallback: any top-level .js/.mjs in dist/server or dist/ssr
+  for (const dir of ['dist/server', 'dist/ssr'].map((d) => path.join(rootDir, d))) {
+    if (!fs.existsSync(dir)) continue;
+    const file = fs.readdirSync(dir).find((f) => /\.(m?js)$/.test(f));
+    if (file) return path.join(dir, file);
+  }
+  return null;
+}
 
 const routes = [
   '/',
@@ -23,9 +56,12 @@ const routes = [
 ];
 
 async function prerenderAll() {
-  if (!fs.existsSync(serverBundlePath)) {
-    throw new Error(`Server bundle not found at ${serverBundlePath}`);
+  const serverBundlePath = findServerBundle();
+  if (!serverBundlePath) {
+    console.error('Build output tree:\n' + listTree(path.join(rootDir, 'dist'), 3) + listTree(path.join(rootDir, '.output'), 2));
+    throw new Error(`Server bundle not found. Looked in:\n  ${serverCandidates.join('\n  ')}`);
   }
+  console.log(`Using server bundle: ${path.relative(rootDir, serverBundlePath)}`);
 
   console.log('Static prerendering routes via in-memory server entry...');
   const mod = await import(serverBundlePath);
