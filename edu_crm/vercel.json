@@ -9,6 +9,18 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/crm/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/crm/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/crm",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
