@@ -2,6 +2,7 @@
   "version": 2,
   "buildCommand": "npm run build:all",
   "outputDirectory": "dist/client",
+  "cleanUrls": true,
   "build": {
     "env": {
       "DANGEROUSLY_DEPLOY_VULNERABLE_TANSTACK_START_XSS": "1"
