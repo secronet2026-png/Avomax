@@ -35,3 +35,4 @@ if (fs.existsSync(path.join(targetCrmDir, 'index.html'))) {
 } else {
   console.warn('Warning: dist/client/crm/index.html was not found.');
 }
+
