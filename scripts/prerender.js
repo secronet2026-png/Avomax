@@ -60,3 +60,4 @@ prerenderAll().catch((err) => {
   console.error('Prerender script failed:', err);
   process.exit(1);
 });
+
