@@ -3,9 +3,15 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "workspaces": [
+    "edu_crm/frontend",
+    "edu_crm/backend"
+  ],
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:crm": "npm run build --workspace=edu-crm-frontend",
+    "build:all": "vite build && npm run build:crm && node scripts/bundle-crm.js",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
