@@ -3,7 +3,6 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build:all",
   "outputDirectory": "dist/client",
-  "cleanUrls": true,
   "build": {
     "env": {
       "DANGEROUSLY_DEPLOY_VULNERABLE_TANSTACK_START_XSS": "1"
@@ -11,25 +10,24 @@
   },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     },
     {
-      "source": "/crm/assets/(.*)",
-      "destination": "/crm/assets/$1"
+      "source": "/crm/assets/:path*",
+      "destination": "/crm/assets/:path*"
     },
     {
       "source": "/crm",
       "destination": "/crm/index.html"
     },
     {
-      "source": "/crm/(.*)",
+      "source": "/crm/:path*",
       "destination": "/crm/index.html"
     },
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
 }
-
