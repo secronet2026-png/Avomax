@@ -47,15 +47,20 @@ if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
 
 app.use(helmet());
 app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-        return callback(null, true);
-      }
-      return callback(null, false);
-    },
-    credentials: true
+  cors((req, callback) => {
+    const origin = req.headers.origin;
+    if (!origin) return callback(null, { origin: true, credentials: true });
+
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    let isSameHost = false;
+    try {
+      if (host && new URL(origin).host === host) isSameHost = true;
+    } catch {}
+
+    if (isSameHost || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, { origin: true, credentials: true });
+    }
+    return callback(null, { origin: false });
   })
 );
 app.use(cookieParser());
