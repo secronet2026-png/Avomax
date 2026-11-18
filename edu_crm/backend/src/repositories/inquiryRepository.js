@@ -7,6 +7,7 @@ import { sanitizeSearchTerm } from '../utils/sanitize.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCAL_DATA_FILE = path.resolve(__dirname, '../../data/inquiries.json');
+const SETTINGS_STORE_KEY = 'crm_inquiries_store';
 
 // Ensure local fallback data file exists
 function ensureLocalDataFile() {
@@ -34,15 +35,54 @@ function writeLocalInquiries(inquiries) {
     ensureLocalDataFile();
     fs.writeFileSync(LOCAL_DATA_FILE, JSON.stringify(inquiries, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Failed to write local inquiries file:', err);
+    console.error('Failed to write local inquiries file:', err.message || err);
   }
 }
 
-const INQUIRY_WITH_RELATIONS = `
-  *,
-  counselor:profiles!inquiries_assigned_counselor_id_fkey(id, full_name, email, role),
-  converted_student:students!inquiries_converted_student_id_fkey(id, student_code, full_name)
-`;
+/**
+ * Reads persistent inquiries from Supabase system_settings if inquiries table does not exist.
+ * Falls back to local inquiries.json if Supabase is unavailable.
+ */
+async function fetchPersistentFallbackInquiries() {
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from('system_settings')
+      .select('setting_value')
+      .eq('setting_key', SETTINGS_STORE_KEY)
+      .maybeSingle();
+
+    if (!error && data?.setting_value && Array.isArray(data.setting_value)) {
+      return data.setting_value;
+    }
+  } catch (err) {
+    console.warn('Could not read from Supabase system_settings fallback:', err.message || err);
+  }
+
+  return readLocalInquiries();
+}
+
+/**
+ * Saves persistent inquiries to Supabase system_settings.
+ * Also mirrors to local file if writable.
+ */
+async function savePersistentFallbackInquiries(records) {
+  writeLocalInquiries(records);
+
+  try {
+    const supabase = getSupabase();
+    await supabase.from('system_settings').upsert(
+      {
+        setting_key: SETTINGS_STORE_KEY,
+        setting_value: records,
+        description: 'Persistent fallback store for CRM inquiries'
+      },
+      { onConflict: 'setting_key' }
+    );
+  } catch (err) {
+    console.warn('Could not write to Supabase system_settings fallback:', err.message || err);
+  }
+}
 
 export async function insertInquiry(payload) {
   const supabase = getSupabase();
@@ -88,20 +128,28 @@ export async function insertInquiry(payload) {
         const fallbackRecord = { ...record };
         delete fallbackRecord.heard_from;
         if (record.heard_from) {
-          fallbackRecord.notes = (fallbackRecord.notes ? fallbackRecord.notes + '\n\n' : '') + `[Heard About Us]: ${record.heard_from}`;
+          fallbackRecord.notes = fallbackRecord.notes
+            ? `${fallbackRecord.notes} | Heard From: ${record.heard_from}`
+            : `Heard From: ${record.heard_from}`;
         }
-        const retry = await supabase.from('inquiries').insert(fallbackRecord).select().single();
-        if (!retry.error) return retry.data;
+        const retryResult = await supabase
+          .from('inquiries')
+          .insert(fallbackRecord)
+          .select()
+          .single();
+
+        if (retryResult.error) throw retryResult.error;
+        return { ...retryResult.data, heard_from: record.heard_from };
       }
       throw error;
     }
+
     return data;
-  } catch (err) {
-    // If Supabase table does not exist or network failed, save to local fallback
-    console.warn('Supabase inquiries insert fallback to local JSON:', err.message || err);
-    const locals = readLocalInquiries();
-    locals.unshift(record);
-    writeLocalInquiries(locals);
+  } catch (error) {
+    console.warn('Supabase inquiries insert failed, falling back to persistent storage:', error.message || error);
+    const existing = await fetchPersistentFallbackInquiries();
+    const updated = [record, ...existing.filter((r) => r.id !== record.id)];
+    await savePersistentFallbackInquiries(updated);
     return record;
   }
 }
@@ -129,7 +177,8 @@ export async function findInquiries(filters = {}) {
       .order(sortBy, { ascending });
 
     if (counselorScopeId) {
-      query = query.eq('assigned_counselor_id', counselorScopeId);
+      // Counselors see inquiries assigned to them OR unassigned inquiries from the website
+      query = query.or(`assigned_counselor_id.eq.${counselorScopeId},assigned_counselor_id.is.null`);
     } else if (assigned_counselor_id) {
       query = query.eq('assigned_counselor_id', assigned_counselor_id);
     }
@@ -163,12 +212,11 @@ export async function findInquiries(filters = {}) {
       totalCount
     };
   } catch (err) {
-    // Fallback to local store
-    console.warn('Supabase inquiries query fallback to local JSON:', err.message || err);
-    let records = readLocalInquiries();
+    console.warn('Supabase inquiries query fallback to persistent storage:', err.message || err);
+    let records = await fetchPersistentFallbackInquiries();
 
     if (counselorScopeId) {
-      records = records.filter((r) => r.assigned_counselor_id === counselorScopeId);
+      records = records.filter((r) => !r.assigned_counselor_id || r.assigned_counselor_id === counselorScopeId);
     } else if (assigned_counselor_id) {
       records = records.filter((r) => r.assigned_counselor_id === assigned_counselor_id);
     }
@@ -225,7 +273,7 @@ export async function findInquiryById(id) {
     }
     return data;
   } catch (err) {
-    const records = readLocalInquiries();
+    const records = await fetchPersistentFallbackInquiries();
     return records.find((r) => r.id === id) || null;
   }
 }
@@ -248,11 +296,11 @@ export async function updateInquiryRecord(id, updates) {
     if (error) throw error;
     return data;
   } catch (err) {
-    const records = readLocalInquiries();
+    const records = await fetchPersistentFallbackInquiries();
     const index = records.findIndex((r) => r.id === id);
     if (index === -1) return null;
     records[index] = { ...records[index], ...patch };
-    writeLocalInquiries(records);
+    await savePersistentFallbackInquiries(records);
     return records[index];
   }
 }
@@ -264,9 +312,9 @@ export async function deleteInquiryRecord(id) {
     if (error) throw error;
     return true;
   } catch (err) {
-    const records = readLocalInquiries();
+    const records = await fetchPersistentFallbackInquiries();
     const filtered = records.filter((r) => r.id !== id);
-    writeLocalInquiries(filtered);
+    await savePersistentFallbackInquiries(filtered);
     return true;
   }
 }
@@ -293,4 +341,3 @@ export async function getInquiryCounts() {
     return { total: 0, new: 0, contacted: 0, in_progress: 0, converted: 0, closed: 0 };
   }
 }
-
