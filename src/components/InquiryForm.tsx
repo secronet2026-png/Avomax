@@ -21,6 +21,7 @@ export function InquiryForm({
     program_of_interest: "Medicine / MBBS",
     intake: "Fall 2026",
     notes: "",
+    heard_from: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -78,6 +79,7 @@ export function InquiryForm({
       program_of_interest: "Medicine / MBBS",
       intake: "Fall 2026",
       notes: "",
+      heard_from: "",
     });
   };
 
@@ -273,6 +275,21 @@ export function InquiryForm({
               value={formData.notes}
               onChange={(e) => handleChange("notes", e.target.value)}
               placeholder="Tell us about your current academic level, budget, or specific university preferences..."
+              className="w-full rounded-xl bg-white/10 border border-white/25 focus:border-emerald-400 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 px-4 py-3 text-sm text-white placeholder:text-slate-400 transition-colors"
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="block">
+            <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-300 font-semibold mb-1.5 block">
+              Where did you hear about us?
+            </span>
+            <input
+              type="text"
+              value={formData.heard_from}
+              onChange={(e) => handleChange("heard_from", e.target.value)}
+              placeholder="e.g. Instagram, Friend recommendation, TikTok, Facebook, Google, School event..."
               className="w-full rounded-xl bg-white/10 border border-white/25 focus:border-emerald-400 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 px-4 py-3 text-sm text-white placeholder:text-slate-400 transition-colors"
             />
           </label>

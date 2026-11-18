@@ -26,6 +26,7 @@ export const createInquirySchema = z.object({
   high_school: z.string().trim().max(200).optional().nullable(),
   address: z.string().trim().max(300).optional().nullable(),
   notes: z.string().trim().max(3000).optional().nullable(),
+  heard_from: z.string().trim().max(255).optional().nullable(),
   source: z.string().trim().max(50).default('website')
 });
 

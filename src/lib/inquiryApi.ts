@@ -13,11 +13,16 @@ export type InquiryPayload = {
   high_school?: string;
   address?: string;
   notes?: string;
+  heard_from?: string;
   source?: string;
 };
 
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
 export const CRM_API_URL =
-  (import.meta as any).env?.VITE_CRM_API_URL || 'http://localhost:5001/api';
+  (import.meta as any).env?.VITE_CRM_API_URL || (isLocalhost ? 'http://localhost:5001/api' : '/api');
 
 export async function submitInquiry(payload: InquiryPayload) {
   const res = await fetch(`${CRM_API_URL}/inquiries`, {

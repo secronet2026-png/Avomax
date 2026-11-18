@@ -85,6 +85,7 @@ export default function InquiriesPage() {
     program_of_interest: '',
     intake: 'Fall 2026',
     notes: '',
+    heard_from: '',
     source: 'direct'
   });
   const [submittingNew, setSubmittingNew] = useState(false);
@@ -472,6 +473,11 @@ export default function InquiriesPage() {
                         <span className="capitalize text-xs font-medium text-gray-600 dark:text-gray-400">
                           {inq.source?.replace('_', ' ') || 'Website'}
                         </span>
+                        {inq.heard_from && (
+                          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 truncate max-w-[140px]" title={`Heard from: ${inq.heard_from}`}>
+                            via {inq.heard_from}
+                          </div>
+                        )}
                       </td>
 
                       <td className="px-6 py-4">
@@ -671,6 +677,15 @@ export default function InquiriesPage() {
                     Applicant Notes & Requirements:
                   </div>
                   <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selectedInquiry.notes}</div>
+                </div>
+              )}
+
+              {selectedInquiry.heard_from && (
+                <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 p-3.5 rounded-lg text-xs">
+                  <div className="font-semibold text-emerald-800 dark:text-emerald-300 mb-1 flex items-center gap-1.5">
+                    <span>📣</span> How They Heard About Us:
+                  </div>
+                  <div className="text-gray-800 dark:text-gray-200 font-medium">{selectedInquiry.heard_from}</div>
                 </div>
               )}
 
@@ -935,6 +950,17 @@ export default function InquiriesPage() {
                     className="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1">Where did they hear about us?</label>
+                <input
+                  type="text"
+                  value={newForm.heard_from}
+                  onChange={(e) => setNewForm({ ...newForm, heard_from: e.target.value })}
+                  placeholder="e.g. Instagram, Facebook, Friend referral, Expo..."
+                  className="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
               </div>
 
               <div>

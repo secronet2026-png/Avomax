@@ -65,6 +65,7 @@ export async function insertInquiry(payload) {
     high_school: payload.high_school || null,
     address: payload.address || null,
     notes: payload.notes || null,
+    heard_from: payload.heard_from || null,
     source: payload.source || 'website',
     status: 'New',
     assigned_counselor_id: payload.assigned_counselor_id || null,
@@ -81,7 +82,19 @@ export async function insertInquiry(payload) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // If heard_from column is missing in Supabase schema, fold into notes and retry
+      if (error.message?.includes('heard_from') || error.code === '42703') {
+        const fallbackRecord = { ...record };
+        delete fallbackRecord.heard_from;
+        if (record.heard_from) {
+          fallbackRecord.notes = (fallbackRecord.notes ? fallbackRecord.notes + '\n\n' : '') + `[Heard About Us]: ${record.heard_from}`;
+        }
+        const retry = await supabase.from('inquiries').insert(fallbackRecord).select().single();
+        if (!retry.error) return retry.data;
+      }
+      throw error;
+    }
     return data;
   } catch (err) {
     // If Supabase table does not exist or network failed, save to local fallback

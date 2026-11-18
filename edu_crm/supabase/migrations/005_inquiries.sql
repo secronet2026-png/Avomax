@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS inquiries (
   high_school VARCHAR(255),
   address VARCHAR(300),
   notes TEXT,
+  heard_from VARCHAR(255),
   source VARCHAR(50) NOT NULL DEFAULT 'website',
   status VARCHAR(50) NOT NULL DEFAULT 'New',
   assigned_counselor_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
