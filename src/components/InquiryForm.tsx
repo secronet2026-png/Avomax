@@ -107,6 +107,23 @@ export function InquiryForm({
             An assigned concierge counselor will contact you shortly.
           </p>
 
+          {/* Highlighted Admission Fee Notice */}
+          <div className="mt-6 max-w-lg mx-auto rounded-2xl bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-amber-500/15 border-2 border-amber-400/60 p-5 shadow-xl text-left backdrop-blur-md">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-lg flex-shrink-0">
+                ⚠️
+              </div>
+              <div className="flex-1">
+                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-300">
+                  Important Notice
+                </div>
+                <p className="mt-1 text-sm font-semibold text-white leading-relaxed">
+                  Upon receiving your offer letter, you are required to pay the admission fee <span className="text-amber-300 underline underline-offset-4 font-bold">within 15 days</span> to secure your admission.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
             <a
               href={wa(`Hello AVOMAX, I just submitted an inquiry (Ref: #${referenceId}) for ${formData.program_of_interest} in ${formData.destination_country}.`)}
@@ -293,6 +310,14 @@ export function InquiryForm({
               className="w-full rounded-xl bg-white/10 border border-white/25 focus:border-emerald-400 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 px-4 py-3 text-sm text-white placeholder:text-slate-400 transition-colors"
             />
           </label>
+        </div>
+
+        {/* Highlighted Policy Notice */}
+        <div className="rounded-xl bg-amber-500/10 border border-amber-400/30 p-3.5 flex items-start gap-3 text-left">
+          <span className="text-amber-300 text-base flex-shrink-0" aria-hidden="true">⚠️</span>
+          <p className="text-xs text-amber-100/90 leading-relaxed">
+            <strong className="text-amber-300 font-semibold">Important:</strong> Upon receiving your offer letter, you are required to pay the admission fee within 15 days to secure your admission.
+          </p>
         </div>
 
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
