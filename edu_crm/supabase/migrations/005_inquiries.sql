@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
   full_name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   phone VARCHAR(50) NOT NULL,
+  parent_phone VARCHAR(50),
   destination_country VARCHAR(100),
   program_of_interest VARCHAR(255),
   intake VARCHAR(50),

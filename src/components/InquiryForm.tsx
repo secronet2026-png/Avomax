@@ -17,6 +17,7 @@ export function InquiryForm({
     full_name: "",
     email: "",
     phone: "",
+    parent_phone: "",
     destination_country: "United Kingdom",
     program_of_interest: "Medicine / MBBS",
     intake: "Fall 2026",
@@ -75,6 +76,7 @@ export function InquiryForm({
       full_name: "",
       email: "",
       phone: "",
+      parent_phone: "",
       destination_country: "United Kingdom",
       program_of_interest: "Medicine / MBBS",
       intake: "Fall 2026",
@@ -214,7 +216,7 @@ export function InquiryForm({
           </label>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid md:grid-cols-2 gap-5">
           <label className="block">
             <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-300 font-semibold mb-1.5 block">
               Phone / WhatsApp <span className="text-emerald-400">*</span>
@@ -229,6 +231,21 @@ export function InquiryForm({
             />
           </label>
 
+          <label className="block">
+            <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-300 font-semibold mb-1.5 block">
+              Parent / Guardian Phone <span className="text-slate-400 font-normal lowercase">(optional)</span>
+            </span>
+            <input
+              type="tel"
+              value={formData.parent_phone}
+              onChange={(e) => handleChange("parent_phone", e.target.value)}
+              placeholder="+263 7..."
+              className="w-full rounded-xl bg-white/10 border border-white/25 focus:border-emerald-400 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 px-4 py-3 text-sm text-white placeholder:text-slate-400 transition-colors"
+            />
+          </label>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-5">
           <label className="block">
             <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-300 font-semibold mb-1.5 block">
               Preferred Country

@@ -20,6 +20,7 @@ export async function createInquiryService(payload, ipAddress = null) {
     full_name: sanitizeText(payload.full_name),
     email: payload.email.trim().toLowerCase(),
     phone: payload.phone.trim(),
+    parent_phone: payload.parent_phone ? payload.parent_phone.trim() : null,
     destination_country: payload.destination_country ? sanitizeText(payload.destination_country) : null,
     program_of_interest: payload.program_of_interest ? sanitizeText(payload.program_of_interest) : null,
     intake: payload.intake ? sanitizeText(payload.intake) : null,

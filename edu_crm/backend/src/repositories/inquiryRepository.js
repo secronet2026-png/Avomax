@@ -94,6 +94,7 @@ export async function insertInquiry(payload) {
     full_name: payload.full_name,
     email: payload.email,
     phone: payload.phone,
+    parent_phone: payload.parent_phone || null,
     destination_country: payload.destination_country || null,
     program_of_interest: payload.program_of_interest || null,
     intake: payload.intake || null,
@@ -123,14 +124,22 @@ export async function insertInquiry(payload) {
       .single();
 
     if (error) {
-      // If heard_from column is missing in Supabase schema, fold into notes and retry
-      if (error.message?.includes('heard_from') || error.code === '42703') {
+      // If heard_from or parent_phone column is missing in Supabase schema, fold into notes and retry
+      if (
+        error.message?.includes('heard_from') ||
+        error.message?.includes('parent_phone') ||
+        error.code === '42703'
+      ) {
         const fallbackRecord = { ...record };
         delete fallbackRecord.heard_from;
-        if (record.heard_from) {
+        delete fallbackRecord.parent_phone;
+        const extraNotes = [];
+        if (record.heard_from) extraNotes.push(`Heard From: ${record.heard_from}`);
+        if (record.parent_phone) extraNotes.push(`Parent Phone: ${record.parent_phone}`);
+        if (extraNotes.length > 0) {
           fallbackRecord.notes = fallbackRecord.notes
-            ? `${fallbackRecord.notes} | Heard From: ${record.heard_from}`
-            : `Heard From: ${record.heard_from}`;
+            ? `${fallbackRecord.notes} | ${extraNotes.join(' | ')}`
+            : extraNotes.join(' | ');
         }
         const retryResult = await supabase
           .from('inquiries')
@@ -139,7 +148,11 @@ export async function insertInquiry(payload) {
           .single();
 
         if (retryResult.error) throw retryResult.error;
-        return { ...retryResult.data, heard_from: record.heard_from };
+        return {
+          ...retryResult.data,
+          heard_from: record.heard_from,
+          parent_phone: record.parent_phone
+        };
       }
       throw error;
     }
@@ -194,7 +207,7 @@ export async function findInquiries(filters = {}) {
       const clean = sanitizeSearchTerm(search);
       if (clean) {
         query = query.or(
-          `full_name.ilike.%${clean}%,email.ilike.%${clean}%,phone.ilike.%${clean}%,destination_country.ilike.%${clean}%,program_of_interest.ilike.%${clean}%`
+          `full_name.ilike.%${clean}%,email.ilike.%${clean}%,phone.ilike.%${clean}%,parent_phone.ilike.%${clean}%,destination_country.ilike.%${clean}%,program_of_interest.ilike.%${clean}%`
         );
       }
     }
@@ -235,6 +248,7 @@ export async function findInquiries(filters = {}) {
           r.full_name?.toLowerCase().includes(s) ||
           r.email?.toLowerCase().includes(s) ||
           r.phone?.toLowerCase().includes(s) ||
+          r.parent_phone?.toLowerCase().includes(s) ||
           r.destination_country?.toLowerCase().includes(s) ||
           r.program_of_interest?.toLowerCase().includes(s)
       );

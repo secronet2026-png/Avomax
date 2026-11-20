@@ -10,6 +10,7 @@ export const createInquirySchema = z.object({
   full_name: z.string().trim().min(2, 'Full name is required (min 2 characters)').max(150),
   email: z.string().trim().email('Valid email address is required'),
   phone: z.string().trim().min(5, 'Phone number is required').max(40),
+  parent_phone: z.string().trim().max(40).optional().nullable(),
   destination_country: z.string().trim().max(100).optional().nullable(),
   program_of_interest: z.string().trim().max(200).optional().nullable(),
   intake: z.string().trim().max(60).optional().nullable(),

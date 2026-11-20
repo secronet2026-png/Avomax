@@ -2,6 +2,7 @@ export type InquiryPayload = {
   full_name: string;
   email: string;
   phone: string;
+  parent_phone?: string;
   destination_country?: string;
   program_of_interest?: string;
   intake?: string;

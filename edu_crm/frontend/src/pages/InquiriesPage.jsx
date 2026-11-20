@@ -81,6 +81,7 @@ export default function InquiriesPage() {
     full_name: '',
     email: '',
     phone: '',
+    parent_phone: '',
     destination_country: '',
     program_of_interest: '',
     intake: 'Fall 2026',
@@ -449,6 +450,14 @@ export default function InquiriesPage() {
                             <Phone className="w-3 h-3 text-gray-400" />
                             {inq.phone}
                           </span>
+                          {inq.parent_phone && (
+                            <>
+                              <span>•</span>
+                              <span className="flex items-center gap-1 text-slate-500" title="Parent / Guardian Phone">
+                                <span className="font-semibold text-xs">P:</span> {inq.parent_phone}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </td>
 
@@ -620,6 +629,23 @@ export default function InquiriesPage() {
                 <div>
                   <div className="text-gray-400 font-medium">Phone</div>
                   <div className="font-semibold text-gray-900 dark:text-white mt-0.5">{selectedInquiry.phone}</div>
+                </div>
+                <div>
+                  <div className="text-gray-400 font-medium">Parent / Guardian Phone</div>
+                  <div className="font-semibold text-gray-900 dark:text-white mt-0.5 flex items-center gap-2">
+                    {selectedInquiry.parent_phone || '—'}
+                    {selectedInquiry.parent_phone && (
+                      <a
+                        href={buildWhatsAppUrl(selectedInquiry.parent_phone, `Parent of ${selectedInquiry.full_name}`)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800"
+                        title="Chat with Parent on WhatsApp"
+                      >
+                        <MessageCircle className="w-3 h-3" /> WhatsApp
+                      </a>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <div className="text-gray-400 font-medium">Destination</div>
@@ -927,6 +953,17 @@ export default function InquiriesPage() {
                     className="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1">Parent / Guardian Phone (Optional)</label>
+                <input
+                  type="tel"
+                  value={newForm.parent_phone}
+                  onChange={(e) => setNewForm({ ...newForm, parent_phone: e.target.value })}
+                  placeholder="+263 ..."
+                  className="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
